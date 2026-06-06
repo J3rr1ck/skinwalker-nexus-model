@@ -2,84 +2,86 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-def generate_nii_based_predictions():
-    # Load historical ground truth with NII scores
+def generate_decadal_nii_predictions():
+    # Load historical events with NII scores
     try:
-        df = pd.read_csv('data/skinwalker_nexus_combo_analysis.csv')
+        events_df = pd.read_csv('data/skinwalker_nexus_combo_analysis.csv')
+        climatology_df = pd.read_csv('data/skinwalker_climatology_with_nii.csv')
     except FileNotFoundError:
-        print("Historical combo analysis not found. Run scripts/calculate_nexus_combo.py first.")
+        print("Required datasets not found. Run scripts/fetch_climatology.py and scripts/calculate_nexus_combo.py first.")
         return
 
-    df['ds'] = pd.to_datetime(df['ds'])
+    events_df['ds'] = pd.to_datetime(events_df['ds'])
+    climatology_df['ds'] = pd.to_datetime(climatology_df['ds'])
     
     # Define Prediction Window: June 2026 to June 2027
     prediction_start = datetime(2026, 6, 6)
     prediction_end = datetime(2027, 6, 6)
     future_dates = pd.date_range(start=prediction_start, end=prediction_end, freq='D')
     
-    unique_ids = df['unique_id'].unique()
+    unique_sensor_ids = events_df['unique_id'].unique()
     
-    # Statistical parameters from historical NII
-    mean_nii = df['nexus_instability_index'].mean()
-    std_nii = df['nexus_instability_index'].std()
+    # Use decadal climatology to derive the NII distribution
+    nii_distribution = climatology_df['nexus_instability_index'].values
+    mean_nii = nii_distribution.mean()
+    std_nii = nii_distribution.std()
+    threshold = mean_nii + (1.5 * std_nii)
     
     predictions = []
 
-    print(f"--- Generating NII-Driven Anomaly Forecast (June 2026 - June 2027) ---")
-    print(f"Baseline Nexus Instability Index (NII): {mean_nii:.2f} +/- {std_nii:.2f}")
+    print(f"--- Generating 10-Year Informed NII Forecast (2026-2027) ---")
+    print(f"Decadal NII Baseline: {mean_nii:.2f} +/- {std_nii:.2f}")
+    print(f"High-Strangeness Threshold: NII > {threshold:.2f}")
 
     for ds in future_dates:
-        # Simulate a daily NII value based on historical variance
-        # In a production environment, this would ingest real-time weather forecasts
-        daily_nii = np.random.normal(mean_nii, std_nii)
+        # Sample NII from decadal distribution (weighted by month if we wanted more precision)
+        daily_nii = np.random.choice(nii_distribution)
         
         # Trigger anomalies based on historical NII thresholds
-        # Threshold: NII > (Mean + 1.5 * STD)
-        is_high_strangeness = daily_nii > (mean_nii + 1.5 * std_nii)
+        is_high_strangeness = daily_nii > threshold
         
-        for sensor_id in unique_ids:
+        for sensor_id in unique_sensor_ids:
             if is_high_strangeness:
-                # High NII event: Correlate with historical anomaly types
-                if 'RAD_GAMMA' in sensor_id:
-                    y_pred = 0.5 + np.random.exponential(1.5)
-                    label = f"Predicted Gamma Burst (NII: {daily_nii:.2f})"
-                elif 'EM_1_6GHZ' in sensor_id:
-                    y_pred = -40 + np.random.normal(0, 10)
-                    label = f"Predicted RF Emission (NII: {daily_nii:.2f})"
-                elif 'GPS_ALT' in sensor_id:
-                    y_pred = -100 - np.random.exponential(150)
-                    label = f"Predicted GPS Collapse (NII: {daily_nii:.2f})"
+                # Correlate predicted anomaly value with historical event levels for that sensor
+                hist_y = events_df[events_df['unique_id'] == sensor_id]['y']
+                if not hist_y.empty:
+                    y_pred = hist_y.mean() * (1.0 + np.random.normal(0, 0.1))
                 else:
-                    y_pred = df[df['unique_id'] == sensor_id]['y'].mean() * 1.5
-                    label = f"Nexus Instability Event (NII: {daily_nii:.2f})"
+                    y_pred = 1.0 # Fallback
                 
+                label = f"Predicted Anomaly Window (NII: {daily_nii:.2f})"
                 predictions.append({
                     'ds': ds,
                     'unique_id': sensor_id,
                     'y': y_pred,
                     'label': label,
-                    'type': 'NII-Triggered Anomaly',
-                    'nii': daily_nii
+                    'type': 'Decadal-Triggered Anomaly',
+                    'predicted_nii': daily_nii
                 })
             else:
-                # Normal baseline prediction
-                y_base = df[df['unique_id'] == sensor_id]['y'].median()
+                # Normal baseline
+                # Use median value from historical background (approximated)
+                if 'GPS' in sensor_id: y_base = 1550 
+                elif 'RAD_GAMMA' in sensor_id: y_base = 0.15
+                elif 'MAG' in sensor_id: y_base = 45.0
+                elif 'EM' in sensor_id: y_base = -100.0
+                else: y_base = 0.0
+                
                 predictions.append({
                     'ds': ds,
                     'unique_id': sensor_id,
-                    'y': y_base + np.random.normal(0, abs(y_base)*0.01),
+                    'y': y_base + np.random.normal(0, 0.05),
                     'label': 'Normal Baseline',
                     'type': 'Baseline Forecast',
-                    'nii': daily_nii
+                    'predicted_nii': daily_nii
                 })
 
     forecast_df = pd.DataFrame(predictions)
-    forecast_df.to_csv('data/skinwalker_2027_nii_forecast.csv', index=False)
+    forecast_df.to_csv('data/skinwalker_2027_decadal_forecast.csv', index=False)
     
-    # Filter only the predicted anomalies for the report
-    anomalies_only = forecast_df[forecast_df['type'] == 'NII-Triggered Anomaly'].drop_duplicates('ds')
-    print(f"\nForecast Complete. Identified {len(anomalies_only)} High-Strangeness Windows based on NII thresholds.")
-    print(anomalies_only[['ds', 'label']].to_string(index=False))
+    anomalies_only = forecast_df[forecast_df['type'] == 'Decadal-Triggered Anomaly'].drop_duplicates('ds')
+    print(f"\nForecast Complete. Identified {len(anomalies_only)} potential anomaly windows in the next year.")
+    print(anomalies_only[['ds', 'label']].head(20).to_string(index=False))
 
 if __name__ == "__main__":
-    generate_nii_based_predictions()
+    generate_decadal_nii_predictions()
