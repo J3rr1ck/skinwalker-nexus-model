@@ -1,0 +1,23 @@
+ds,unique_id,y,label,unit
+1996-06-15 12:00:00,SWR_RAD_GAMMA,0.15,Baseline Gamma Rate,uSv/h
+1997-03-12 23:30:00,SWR_RAD_GAMMA,1.8,Ionizing Radiation Spike,uSv/h
+1998-08-10 21:15:00,SWR_MAG_FIELD,45.0,Magnetic Excursion,nT
+2002-10-15 02:45:00,SWR_MAG_FIELD,85.0,Magnetic Excursion,nT
+2020-05-12 14:20:00,SWR_RAD_GAMMA,2.2,Ionizing Radiation Spike,uSv/h
+2020-05-12 14:30:00,SWR_RAD_GAMMA_CPM,700.0,Cattle Death Gamma Burst,cpm
+2021-05-25 10:30:00,SWR_RAD_GAMMA,1.2,Travis Taylor Exposure (Cistern),uSv/s
+2021-05-25 10:30:10,SWR_RAD_GAMMA,4300000.0,Calculated Source Strength,uSv/h
+2021-05-25 11:15:00,SWR_THERMAL,-4.5,Thermal Cylinder (Cold Spot),delta_C
+2021-06-21 15:45:00,SWR_EM_1_6GHZ,-45.0,Narrowband RF Emission,dBm
+2021-06-21 15:46:00,SWR_EM_1_6GHZ_FREQ,1100.0,Frequency Hop (Low),MHz
+2021-06-21 15:46:30,SWR_EM_1_6GHZ_FREQ,2100.0,Frequency Hop (High),MHz
+2022-05-17 11:00:00,SWR_GPS_ALT,-150.0,GNSS Coordinate Jump,m
+2022-05-17 11:00:05,SWR_GPS_TIMING_ERROR,0.25,Signal Propagation Delay,s
+2022-06-07 13:30:00,SWR_EM_1_6GHZ,-35.0,Narrowband RF Emission,dBm
+2022-06-07 14:00:00,SWR_EM_832MHZ,-20.0,Drone Telemetry Disruption,dBm
+2022-08-12 10:00:00,SWR_AVIATION_BOUNCE,5000.0,Aviation Tracker Deflection,ft_AGL
+2023-06-19 16:15:00,SWR_GPS_ALT,-220.0,GNSS Coordinate Jump,m
+2023-07-10 22:10:00,SWR_RAD_GAMMA,0.85,Ionizing Radiation Spike,uSv/h
+2024-05-22 09:45:00,SWR_EM_1_6GHZ,-30.0,Narrowband RF Emission,dBm
+2025-07-08 14:00:00,SWR_MAG_FIELD,65.0,Magnetic Excursion,nT
+2025-07-08 14:15:00,SWR_GPS_ALT,-310.0,GNSS Coordinate Jump,m
